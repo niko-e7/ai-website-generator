@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   User,
 } from "lucide-react";
+import { SignInButton } from "@clerk/nextjs";
 
 const suggestions = [
   {
@@ -63,9 +64,11 @@ function Hero() {
           <Button variant={"ghost"}>
             <ImagePlus />
           </Button>
-          <Button>
+          <SignInButton mode="modal" forceRedirectUrl={"/workspace"}>
+          <Button disabled={!userInput}>
             <ArrowUp />
           </Button>
+          </SignInButton>
         </div>
       </div>
       {/* suggestion list */}
