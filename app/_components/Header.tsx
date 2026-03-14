@@ -4,11 +4,13 @@ import path from "path";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { SignInButton } from "@clerk/nextjs";
+import Link from "next/link";
+
 
 const MenuOptions = [
   {
     name: "Pricing",
-    path: "/pricing",   
+    path: "/pricing",
   },
   {
     name: "Contact us",
@@ -27,14 +29,22 @@ function Header() {
       {/* Menu Options */}
       <div className="flex gap-3">
         {MenuOptions.map((menu, index) => (
-          <Button variant={'ghost'} key={index}>{menu.name}</Button>
+          <Button variant={"ghost"} key={index}>
+            {menu.name}
+          </Button>
         ))}
       </div>
 
       {/* Get Started Button */}
       <div>
         <SignInButton mode="modal" forceRedirectUrl={"/workspace"}>
-        <Button>Get Started <ArrowRight/></Button>
+         
+        <Link href={'/workspace'}>
+         
+          <Button>
+            Get Started <ArrowRight />
+          </Button>
+          </Link>
         </SignInButton>
       </div>
     </div>
