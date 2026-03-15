@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   //Create Project
     const project = await db.insert(projectTable).values({
     projectID:projectId,
-    createdBy:user?.primaryEmailAddress?.emailAddress
+    createdBy:user?.primaryEmailAddress?.emailAddress,
     })
   //Create Frame
     const frameResult = await db.insert(frameTable).values({
@@ -21,7 +21,8 @@ export async function POST(req: NextRequest) {
   //Save User MSg
     const chatResult = await db.insert(chatTable).values({
         chatMessage: messages,
-        createdBy: user?.primaryEmailAddress?.emailAddress
+        createdBy: user?.primaryEmailAddress?.emailAddress,
+        frameId: frameId
     })
 
     return NextResponse.json({ project, frameResult, chatResult });

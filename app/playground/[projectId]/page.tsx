@@ -17,14 +17,61 @@ export type Frame = {
 export type Messages = {
   role: string;
   content: string;
+};
 
-}
+const Prompt = `userInput: {userInput}
+
+Based on the user input, generate complete HTML + Tailwind CSS code using Flowbite UI components. Use a modern design with blue as the primary theme color.
+
+Do not add HTML <head> or <title> tags. Only return the <body>. Make it fully responsive.
+
+Requirements:
+- All primary components must match the theme color.
+- Add proper padding and margin for each element.
+- Components should not be connected to one another; each element should be independent.
+- Design must be fully responsive for all screen sizes.
+- Use placeholders for all images.
+
+For light mode images use:
+https://placehold.co/600x400/f3f4f6/111827?text=Placeholder+Image
+
+For dark mode images use:
+https://placehold.co/600x400/1f2937/ffffff?text=Placeholder+Image
+
+For every image, add an alt tag describing the image prompt.
+
+- Do not include broken links.
+- Libraries are already installed, so do not install them or add script tags.
+- Header menu options should be spaced out and not connected.
+
+Use the following libraries/components where appropriate:
+- Font Awesome icons
+- Flowbite for UI components such as buttons, modals, forms, tables, tabs, alerts, cards, dialogs, dropdowns, etc.
+- Chart.js for charts and graphs
+- Swiper.js for sliders and carousels
+- Tippy.js for tooltips and popovers
+
+Additional requirements:
+- Ensure proper spacing, alignment, and visual hierarchy for all elements.
+- Include interactive components such as modals, dropdowns, and accordions where suitable.
+- Ensure charts are visually appealing and match the theme color.
+- Do not add any extra text before or after the HTML code.
+- Output a complete, ready-to-use HTML page.
+
+Do not include any raw text before or after the HTML output. The response must contain only the HTML code.
+Wrap the final output inside a \`\`\`html code block and do not include any explanation outside the code block.
+
+
+`;
 
 function PlayGround() {
   const { projectId } = useParams();
   const params = useSearchParams();
   const frameId = params.get("frameId");
   const [frameDetail, setFrameDetail] = useState<Frame>();
+  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState<Messages[]>([]);
+  const [generatedCode, setGeneratedCode] = useState("");
 
   useEffect(() => {
     GetFrameDetails();
@@ -32,22 +79,77 @@ function PlayGround() {
 
   const GetFrameDetails = async () => {
     const result = await axios.get(
-      "/api/frames?frameId=" + frameId + "&projectId=" + projectId);
+      "/api/frames?frameId=" + frameId + "&projectId=" + projectId,
+    );
     console.log(result.data);
     setFrameDetail(result.data);
+    if (result.data?.chatMessages?.length == 1){
+      const userMsg = result.data.chatMessages[0].content;
+      SendMessage(userMsg);
+    }
+
   };
 
-  const SendMessage = (userInput:string)=> {
+  const SendMessage = async (userInput: string) => {
+    setLoading(true);
 
-  }
+    //Add user mesage to chat
+
+    setMessages((prev: any) => [...prev, { role: "user", content: userInput }]);
+
+    const result = await fetch("/api/ai-model", {
+      method: "POST",
+      body: JSON.stringify({
+        messages: [
+          { role: "user", content: Prompt?.replace("{userInput}", userInput) },
+        ], //Pass Prompt
+      }),
+    });
+
+    const reader = result.body?.getReader();
+    const decoder = new TextDecoder();
+    let aiResponse = "";
+    let isCode = false;
+
+    while (true) {
+      const { done, value } = await reader!.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      aiResponse += chunk;
+      //Check if AI start sending code
+      if (!isCode && aiResponse.includes("```html")) {
+        isCode = true;
+        const index = aiResponse.indexOf("```html") + 7;
+        const initialCodeChunk = aiResponse.slice(index);
+        setGeneratedCode((prev: any) => prev + initialCodeChunk);
+      } else if (isCode) {
+        setGeneratedCode((prev: any) => prev + chunk);
+      }
+    }
+    //After Streaming ends
+    setMessages((prev: any) => [
+      ...prev,
+      { role: "assistant", content: "Your code is ready!" },
+    ]);
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    console.log(generatedCode);
+  }, [generatedCode]);
 
   return (
     <div>
       <PlaygroundHeader />
       <div className="flex">
         {/* ChatSection */}
-        <ChatSection messages = {frameDetail?.chatMessages ?? []} 
-        onSend = {(input:string)=>SendMessage(input)}/>
+        <ChatSection
+          messages={messages ?? []}
+          onSend={(input: string) => SendMessage(input)}
+          loading={loading}
+        />
         {/* WebsiteDesign */}
         <WebsiteDesign />
         {/* Setting section */}
