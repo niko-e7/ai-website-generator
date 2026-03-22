@@ -9,13 +9,13 @@ export async function POST(req: NextRequest) {
     const user = await currentUser();
   //Create Project
     const project = await db.insert(projectTable).values({
-    projectID:projectId,
+    projectId:projectId,
     createdBy:user?.primaryEmailAddress?.emailAddress,
     })
   //Create Frame
     const frameResult = await db.insert(frameTable).values({
     frameId: frameId,
-    projectID: projectId,
+    projectId: projectId,
 })
 
   //Save User MSg

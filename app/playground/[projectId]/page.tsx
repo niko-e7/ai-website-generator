@@ -6,6 +6,7 @@ import WebsiteDesign from "../_components/WebsiteDesign";
 import ElementSettingSection from "../_components/ElementSettingSection";
 import { useParams, useSearchParams } from "next/navigation";
 import axios from "axios";
+import { toast } from "sonner";
 
 export type Frame = {
   projectId: string;
@@ -83,11 +84,27 @@ function PlayGround() {
     );
     console.log(result.data);
     setFrameDetail(result.data);
-    if (result.data?.chatMessages?.length == 1){
-      const userMsg = result.data.chatMessages[0].content;
-      SendMessage(userMsg);
+
+    const designCode = result.data?.designCode;
+
+    if (designCode) {
+      const formattedCode = designCode
+        .replaceAll("```html", "")
+        .replaceAll("```", "")
+        .replace("html", "")
+        .trim();
+
+      setGeneratedCode(formattedCode);
+    } else {
+      setGeneratedCode("");
     }
 
+    if (result.data?.chatMessages?.length == 1) {
+      const userMsg = result.data.chatMessages[0].content;
+      SendMessage(userMsg);
+    } else {
+      setMessages(result.data?.chatMessages);
+    }
   };
 
   const SendMessage = async (userInput: string) => {
@@ -127,6 +144,8 @@ function PlayGround() {
         setGeneratedCode((prev: any) => prev + chunk);
       }
     }
+
+    await SaveGeneratedCode(aiResponse);
     //After Streaming ends
     setMessages((prev: any) => [
       ...prev,
@@ -137,8 +156,28 @@ function PlayGround() {
   };
 
   useEffect(() => {
-    console.log(generatedCode);
-  }, [generatedCode]);
+    if (messages.length > 0) {
+      SaveMesaages();
+    }
+  }, [messages]);
+
+  const SaveMesaages = async () => {
+    const resut = axios.put("/api/chats", {
+      messages: messages,
+      frameId: frameId,
+    });
+    console.log(resut);
+  };
+
+  const SaveGeneratedCode = async (code: string) => {
+    const result = await axios.put("/api/frames", {
+      designCode: code,
+      frameId: frameId,
+      projectId: projectId,
+    });
+    console.log(result);
+    toast.success("Website is ready!");
+  };
 
   return (
     <div>
@@ -151,9 +190,8 @@ function PlayGround() {
           loading={loading}
         />
         {/* WebsiteDesign */}
-        <WebsiteDesign />
-        {/* Setting section */}
-        {/* <ElementSettingSection /> */}
+        <WebsiteDesign generatedCode={generatedCode} />
+        
       </div>
     </div>
   );

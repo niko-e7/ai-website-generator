@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
       {
-        model: "google/gemini-2.5-flash-lite-preview-09-2025",
+       model: "openrouter/auto",
         messages,
         stream: true,
       },
