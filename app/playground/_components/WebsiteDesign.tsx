@@ -3,6 +3,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import WebPageTools from "./WebPageTools";
 import ElementSettingSection from "./ElementSettingSection";
+import ImageSettingSection from "./ImageSettingsSection";
+import { useParams, useSearchParams } from "next/navigation";
+import { OnSaveContext } from "@/context/OnSaveContext";
+import { useContext } from "react";
+import axios from "axios";
+import { toast } from "sonner";
 
 type Props = {
   generatedCode: string;
@@ -29,7 +35,11 @@ const HTML_CODE = `
 function WebsiteDesign({ generatedCode }: Props) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [selectedScreenSize, setSelectedScreenSize] = useState("web");
-  const [selectedElement, setSelectedElement]=useState<HTMLElement|null>();
+  const [selectedElement, setSelectedElement] = useState<HTMLElement | null>();
+  const { onSaveData, setOnSaveData } = useContext(OnSaveContext);
+  const { projectId } = useParams();
+  const params = useSearchParams();
+  const frameId = params.get("frameId");
 
   const cleanGeneratedCode = (code: string) => {
     return (
@@ -79,7 +89,12 @@ function WebsiteDesign({ generatedCode }: Props) {
     const handleMouseOver = (e: Event) => {
       const target = e.target as HTMLElement;
       if (!target) return;
-      if (target.id === "root" || target.tagName === "BODY" || target.tagName === "HTML") return;
+      if (
+        target.id === "root" ||
+        target.tagName === "BODY" ||
+        target.tagName === "HTML"
+      )
+        return;
       if (selectedEl) return;
 
       clearHover();
@@ -100,7 +115,12 @@ function WebsiteDesign({ generatedCode }: Props) {
 
       const target = e.target as HTMLElement;
       if (!target) return;
-      if (target.id === "root" || target.tagName === "BODY" || target.tagName === "HTML") return;
+      if (
+        target.id === "root" ||
+        target.tagName === "BODY" ||
+        target.tagName === "HTML"
+      )
+        return;
 
       console.log("clicked:", target.tagName, target.className, target);
 
@@ -113,14 +133,25 @@ function WebsiteDesign({ generatedCode }: Props) {
       selectedEl = target;
       selectedEl.style.outline = "2px solid red";
 
-      const editableTags = ["H1", "H2", "H3", "H4", "H5", "H6", "P", "SPAN", "A", "BUTTON", "LI"];
+      const editableTags = [
+        "H1",
+        "H2",
+        "H3",
+        "H4",
+        "H5",
+        "H6",
+        "P",
+        "SPAN",
+        "A",
+        "BUTTON",
+        "LI",
+      ];
       if (editableTags.includes(selectedEl.tagName)) {
         selectedEl.setAttribute("contenteditable", "true");
         selectedEl.focus();
       }
 
-
-      setSelectedElement(selectedEl)
+      setSelectedElement(selectedEl);
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -155,23 +186,70 @@ function WebsiteDesign({ generatedCode }: Props) {
     console.log("code injected");
   }, [generatedCode]);
 
+  useEffect(() => {
+    onSaveData && onSaveCode();
+  }, [onSaveData]);
+
+  const onSaveCode = async() => {
+    if (iframeRef.current) {
+      try {
+        const iframeDoc =
+          iframeRef.current.contentDocument ||
+          iframeRef.current.contentWindow?.document;
+        if (iframeDoc) {
+          const cloneDoc = iframeDoc.documentElement.cloneNode(
+            true,
+          ) as HTMLElement;
+          //Remove All Outlines
+          const AllEls = cloneDoc.querySelectorAll<HTMLElement>("*");
+          AllEls.forEach((el) => {
+            el.style.outline = "";
+            el.style.cursor = "";
+          });
+
+          const html = cloneDoc.outerHTML;
+          console.log("HTML to save", html);
+
+          const result = await axios.put("/api/frames", {
+            designCode: html,
+            frameId: frameId,
+            projectId: projectId,
+          });
+          console.log(result);
+          toast.success("Saved!");
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  };
+
   return (
     <div className="flex gap-2 w-full">
-    <div className="p-5 flex-1 flex flex-col items-center">
-      <iframe
-        ref={iframeRef}
-        className={`${selectedScreenSize === "web" ? "w-full" : "w-80"} h-[79vh] border-2 rounded-xl`}
-        sandbox="allow-scripts allow-same-origin"
-      />
-      <WebPageTools
-        selectedScreenSize={selectedScreenSize}
-        setSelectedScreenSize={(v: string) => setSelectedScreenSize(v)}
-        generatedCode={generatedCode}
-      />
-    </div>
-    {/* Setting section */}
-    {/* @ts-ignore */}
-    <ElementSettingSection selectedEl={selectedElement} clearSelection={()=>setSelectedElement(null)}/>
+      <div className="p-5 flex-1 flex flex-col items-center">
+        <iframe
+          ref={iframeRef}
+          className={`${selectedScreenSize === "web" ? "w-full" : "w-80"} h-[79vh] border-2 rounded-xl`}
+          sandbox="allow-scripts allow-same-origin"
+        />
+        <WebPageTools
+          selectedScreenSize={selectedScreenSize}
+          setSelectedScreenSize={(v: string) => setSelectedScreenSize(v)}
+          generatedCode={generatedCode}
+        />
+      </div>
+      {/* Setting section */}
+      {/* @ts-ignore */}
+      {/* <ElementSettingSection selectedEl={selectedElement} clearSelection={()=>setSelectedElement(null)}/> */}
+      {selectedElement?.tagName == "IMG" ? (
+        //@ts-ignore
+        <ImageSettingSection selectedEl={selectedElement} />
+      ) : selectedElement ? (
+        <ElementSettingSection
+          selectedEl={selectedElement}
+          clearSelection={() => setSelectedElement(null)}
+        />
+      ) : null}
     </div>
   );
 }

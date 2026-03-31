@@ -1,16 +1,16 @@
-import React from 'react'
-import Image from 'next/image'
-import { Button } from '@/components/ui/button'
-
+import React, { useContext } from "react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { OnSaveContext } from "@/context/OnSaveContext";
 
 function PlaygroundHeader() {
+  const {onSaveData, setOnSaveData}=useContext(OnSaveContext)
   return (
-    <div className='flex justify-between items-center p-4 shadow'>
-    <Image src={'/logo.svg'} alt="logo" width={40} height={40} />
-    <Button>save</Button>
+    <div className="flex justify-between items-center p-4 shadow">
+      <Image src={"/logo.svg"} alt="logo" width={40} height={40} />
+      <Button onClick={()=>setOnSaveData(Date.now())}>save</Button>
     </div>
-  )
+  );
 }
 
-export default PlaygroundHeader
-  
+export default PlaygroundHeader;
