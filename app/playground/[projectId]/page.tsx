@@ -89,9 +89,14 @@ function PlayGround() {
 
     if (designCode) {
       const formattedCode = designCode
-        .replaceAll("```html", "")
-        .replaceAll("```", "")
-        .replace("html", "")
+        .replace(/```html/g, "")
+        .replace(/```/g, "")
+        .replace(/<!DOCTYPE html>/gi, "")
+        .replace(/<html[^>]*>/gi, "")
+        .replace(/<\/html>/gi, "")
+        .replace(/<head[\s\S]*?<\/head>/gi, "")
+        .replace(/<body[^>]*>/gi, "")
+        .replace(/<\/body>/gi, "")
         .trim();
 
       setGeneratedCode(formattedCode);
@@ -191,7 +196,6 @@ function PlayGround() {
         />
         {/* WebsiteDesign */}
         <WebsiteDesign generatedCode={generatedCode} />
-        
       </div>
     </div>
   );

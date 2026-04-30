@@ -14,7 +14,7 @@ import Image from "next/image";
 import { useContext, useEffect, useState } from "react";
 import { UserDetailContext } from "@/context/UserDetailContext";
 import { Progress } from "@/components/ui/progress";
-import { UserButton } from "@clerk/nextjs";
+import { useAuth, UserButton } from "@clerk/nextjs";
 import axios from "axios";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -22,10 +22,12 @@ export function AppSidebar() {
   const [projectList, setProjectList] = useState<any[]>([]);
   const { userDetail } = useContext(UserDetailContext);
   const [loading, setLoading] = useState(false);
-
+  const {has} = useAuth()
   useEffect(() => {
     GetProjectList();
   }, []);
+
+  const hasUnlimitedAccess = has&&has({ plan: 'unlimited' })
 
   const GetProjectList = async () => {
     try {
@@ -98,15 +100,20 @@ export function AppSidebar() {
 
       <SidebarFooter />
       <SidebarFooter className="p-2">
-        <div className="p-3 border rounded-xl space-y-3 bg-secondary">
-          <h2 className="flex justify-between items-center">
-            Remaining Credits
-            <span className="font-bold">{userDetail?.credits}</span>
-          </h2>
-          <Progress value={33} />
-          <Button className="w-full">Upgrade to Unlimited</Button>
-        </div>
+        {/* Show credits remining */}
+       <div className="p-3 border rounded-xl space-y-3 bg-secondary">
+  <h2 className="flex justify-between items-center">
+    Remaining Credits
+    <span className="font-bold">{userDetail?.credits ?? 0}</span>
+  </h2>
+  <Progress value={((userDetail?.credits ?? 0) / 2) * 100} />
+  <Link href={"/workspace/pricing"} className="w-full">
+    <Button className="w-full">Upgrade Unlimited</Button>
+  </Link>
+</div>
 
+
+        {/* User Profile section */}
         <div className="flex items-center gap-2">
           <UserButton />
           <Button variant={"ghost"}>Settings</Button>
@@ -115,3 +122,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+

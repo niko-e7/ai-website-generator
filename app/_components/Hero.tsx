@@ -18,7 +18,9 @@ import { SignInButton } from "@clerk/nextjs";
 import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
+import { useAuth } from "@clerk/nextjs";
+import { useContext } from "react";
+import { UserDetailContext } from "@/context/UserDetailContext";
 
 const suggestions = [
   {
@@ -52,8 +54,17 @@ function Hero() {
   const { user } = useUser();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const {has} = useAuth()
+  const {userDetail,setUserDetail} = useContext(UserDetailContext);
+   const hasUnlimitedAccess = has&&has({ plan: 'unlimited' })
 
   const CreateNewProject = async () => {
+
+    if(!hasUnlimitedAccess && userDetail?.credits! <= 0){
+      toast.error("Yoi have no credits left. Please upgrade your plan.")
+      return;
+    }
+
     setLoading(true);
     const projectId = uuidv4();
     const frameId = generateRandomFrameNumber();
@@ -68,11 +79,17 @@ function Hero() {
         projectId: projectId,
         frameId: frameId,
         messages: messages,
+        credits:userDetail?.credits
       });
       console.log(result.data);
       toast.success("Project Created!");
       //Navigate to Playground
       router.push(`/playground/${projectId}?frameId=${frameId}`);
+      setUserDetail((prev:any)=>({
+        ...prev
+        ,credits: prev?.credits!-1
+      }))
+      ;
       setLoading(false);
     } catch (e) {
       toast.error("Internal Server Error");
