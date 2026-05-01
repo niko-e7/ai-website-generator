@@ -49,12 +49,16 @@ function ElementSettingSection({ selectedEl, clearSelection }: Props) {
             .filter((c) => c.trim() !== "");
         setClasses(currentClasses);
 
-        // watch for future class changes
+        // watch for future class changes — only update if the class list actually changed
         const observer = new MutationObserver(() => {
             const updated = selectedEl.className
                 .split(" ")
                 .filter((c) => c.trim() !== "");
-            setClasses(updated);
+            setClasses(prev =>
+                prev.length === updated.length && prev.every((c, i) => c === updated[i])
+                    ? prev
+                    : updated
+            );
         });
 
         observer.observe(selectedEl, { attributes: true, attributeFilter: ["class"] });
@@ -81,15 +85,15 @@ function ElementSettingSection({ selectedEl, clearSelection }: Props) {
     };
 
     return (
-        <div className='w-96 shadow p-4 space-y-4 overflow-auto h-[90vh] rounded-xl mt-2 mr-2'>
-            <h2 className='flex gap-2 items-center font-bold'>
+        <div className='w-96 shadow p-4 space-y-4 overflow-auto h-[90vh] rounded-xl mt-2 mr-2 bg-slate-900 border border-slate-700'>
+            <h2 className='flex gap-2 items-center font-bold text-slate-100'>
                 <SwatchBook /> Settings
             </h2>
 
             {/* Font Size + Text Color inline */}
             <div className="flex items-center gap-4">
                 <div className="flex-1">
-                    <label className='text-sm'>Font Size</label>
+                    <label className='text-sm text-slate-300'>Font Size</label>
                     <Select defaultValue={selectedEl?.style?.fontSize || '24px'}
                         onValueChange={(value) => applyStyle('fontSize', value)}
                     >
@@ -107,7 +111,7 @@ function ElementSettingSection({ selectedEl, clearSelection }: Props) {
                 </div>
 
                 <div>
-                    <label className='text-sm block'>Text Color</label>
+                    <label className='text-sm block text-slate-300'>Text Color</label>
                     <input type='color'
                         className='w-[40px] h-[40px] rounded-lg mt-1'
                         value={selectedEl?.style?.color || '#000000'}
@@ -118,20 +122,20 @@ function ElementSettingSection({ selectedEl, clearSelection }: Props) {
 
             {/* Text Alignment */}
             <div>
-                <label className="text-sm mb-1 block">Text Alignment</label>
+                <label className="text-sm mb-1 block text-slate-300">Text Alignment</label>
                 <ToggleGroup
                     type="single"
                     value={align}
                     onValueChange={setAlign}
-                    className="bg-gray-100 rounded-lg p-1 inline-flex w-full justify-between"
+                    className="bg-slate-800 rounded-lg p-1 inline-flex w-full justify-between"
                 >
-                    <ToggleGroupItem value="left" className="p-2 rounded hover:bg-gray-200 flex-1">
+                    <ToggleGroupItem value="left" className="p-2 rounded hover:bg-slate-700 flex-1 text-slate-300">
                         <AlignLeft size={20} />
                     </ToggleGroupItem>
-                    <ToggleGroupItem value="center" className="p-2 rounded hover:bg-gray-200 flex-1">
+                    <ToggleGroupItem value="center" className="p-2 rounded hover:bg-slate-700 flex-1 text-slate-300">
                         <AlignCenter size={20} />
                     </ToggleGroupItem>
-                    <ToggleGroupItem value="right" className="p-2 rounded hover:bg-gray-200 flex-1">
+                    <ToggleGroupItem value="right" className="p-2 rounded hover:bg-slate-700 flex-1 text-slate-300">
                         <AlignRight size={20} />
                     </ToggleGroupItem>
                 </ToggleGroup>
@@ -140,7 +144,7 @@ function ElementSettingSection({ selectedEl, clearSelection }: Props) {
             {/* Background Color + Border Radius inline */}
             <div className="flex items-center gap-4">
                 <div>
-                    <label className='text-sm block'>Background</label>
+                    <label className='text-sm block text-slate-300'>Background</label>
                     <input type='color'
                         className='w-[40px] h-[40px] rounded-lg mt-1'
                         defaultValue={selectedEl?.style?.backgroundColor || '#ffffff'}
@@ -148,7 +152,7 @@ function ElementSettingSection({ selectedEl, clearSelection }: Props) {
                     />
                 </div>
                 <div className="flex-1">
-                    <label className='text-sm'>Border Radius</label>
+                    <label className='text-sm text-slate-300'>Border Radius</label>
                     <Input type='text'
                         placeholder='e.g. 8px'
                         defaultValue={selectedEl?.style?.borderRadius || ''}
@@ -160,7 +164,7 @@ function ElementSettingSection({ selectedEl, clearSelection }: Props) {
 
             {/* Padding */}
             <div>
-                <label className='text-sm'>Padding</label>
+                <label className='text-sm text-slate-300'>Padding</label>
                 <Input type='text'
                     placeholder='e.g. 10px 15px'
                     defaultValue={selectedEl?.style?.padding || ''}
@@ -171,7 +175,7 @@ function ElementSettingSection({ selectedEl, clearSelection }: Props) {
 
             {/* Margin */}
             <div>
-                <label className='text-sm'>Margin</label>
+                <label className='text-sm text-slate-300'>Margin</label>
                 <Input type='text'
                     placeholder='e.g. 10px 15px'
                     defaultValue={selectedEl?.style?.margin || ''}
@@ -183,7 +187,7 @@ function ElementSettingSection({ selectedEl, clearSelection }: Props) {
             {/* === Class Manager === */}
 
             <div>
-                <label className="text-sm font-medium">Classes</label>
+                <label className="text-sm font-medium text-slate-300">Classes</label>
 
                 {/* Existing classes as removable chips */}
                 <div className="flex flex-wrap gap-2 mt-2">
@@ -191,7 +195,7 @@ function ElementSettingSection({ selectedEl, clearSelection }: Props) {
                         classes.map((cls) => (
                             <span
                                 key={cls}
-                                className="flex text-xs items-center gap-1 px-2 py-1 text-sm rounded-full bg-gray-100 border"
+                                className="flex text-xs items-center gap-1 px-2 py-1 text-sm rounded-full bg-slate-800 border border-slate-700 text-slate-200"
                             >
                                 {cls}
                                 <button
@@ -203,7 +207,7 @@ function ElementSettingSection({ selectedEl, clearSelection }: Props) {
                             </span>
                         ))
                     ) : (
-                        <span className="text-gray-400 text-sm">No classes applied</span>
+                        <span className="text-slate-400 text-sm">No classes applied</span>
                     )}
                 </div>
 

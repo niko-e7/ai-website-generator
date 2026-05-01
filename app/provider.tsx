@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { useUser } from "@clerk/nextjs";
 import { UserDetailContext } from "@/context/UserDetailContext";
@@ -24,10 +24,19 @@ function Provider({
     setUserDetail(result.data.user);
   };
 
+  const userDetailValue = useMemo(
+    () => ({ userDetail, setUserDetail }),
+    [userDetail]
+  );
+  const onSaveValue = useMemo(
+    () => ({ onSaveData, setOnSaveData }),
+    [onSaveData]
+  );
+
   return (
     <div>
-      <UserDetailContext.Provider value={{ userDetail, setUserDetail }}>
-        <OnSaveContext.Provider value={{onSaveData, setOnSaveData}}>
+      <UserDetailContext.Provider value={userDetailValue}>
+        <OnSaveContext.Provider value={onSaveValue}>
         {children}
         </OnSaveContext.Provider>
       </UserDetailContext.Provider>

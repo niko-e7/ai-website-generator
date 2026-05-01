@@ -54,10 +54,10 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="p-5">
-        <div className="flex items-center gap-2">
-          <Image src={"/logo.svg"} alt="logo" width={35} height={35} />
+        <Link href="/" className="flex items-center gap-2">
+          <Image src={"/logo1.svg"} alt="logo" width={24} height={24} />
           <h2 className="font-bold text-xl">AI Website Builder</h2>
-        </div>
+        </Link>
 
         <Link href={"/workspace"} className="mt-5 w-full">
           <Button className="w-full">+ Add New Project</Button>
@@ -69,7 +69,7 @@ export function AppSidebar() {
           <SidebarGroupContent>Projects</SidebarGroupContent>
 
           {!loading && projectList.length === 0 && (
-            <h2 className="text-sm text-gray-500">No project found</h2>
+            <h2 className="text-sm text-slate-400">No project found</h2>
           )}
 
           <div>
@@ -84,7 +84,7 @@ export function AppSidebar() {
                   <Link
                     href={`/playground/${project.projectId}?frameId=${project.frameId}`}
                     key={project.projectId}
-                    className="my-2 hover:bg-secondary p-2 rounded-lg cursor-pointer block"
+                    className="my-2 hover:bg-sidebar-accent p-2 rounded-lg cursor-pointer block"
                   >
                     <h2 className="line-clamp-1">
                       {project?.chats?.[0]?.chatMessage?.[0]?.content ||
@@ -101,7 +101,7 @@ export function AppSidebar() {
       <SidebarFooter />
       <SidebarFooter className="p-2">
         {/* Show credits remining */}
-       <div className="p-3 border rounded-xl space-y-3 bg-secondary">
+       <div className="p-3 border border-slate-700 rounded-xl space-y-3 bg-slate-800">
   <h2 className="flex justify-between items-center">
     Remaining Credits
     <span className="font-bold">{userDetail?.credits ?? 0}</span>

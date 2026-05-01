@@ -126,7 +126,8 @@ function ImageSettingSection({ selectedEl }: Props) {
           alt={altText}
           className="max-h-40 object-contain border rounded cursor-pointer hover:opacity-80"
           onClick={openFileDialog}
-          onLoad={()=>setLoading(false)}
+          onLoad={() => setLoading(false)}
+          onError={() => setLoading(false)}
         />
       </div>
 

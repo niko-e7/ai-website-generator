@@ -10,7 +10,7 @@ import Link from "next/link";
 const MenuOptions = [
   {
     name: "Pricing",
-    path: "/pricing",
+    path: "/workspace/pricing",
   },
   {
     name: "Contact us",
@@ -20,30 +20,24 @@ const MenuOptions = [
 
 function Header() {
   return (
-    <div className="flex items-center justify-between p-4 shadow">
+    <div className="flex items-center justify-between p-4 shadow bg-[#07111f] border-b border-slate-800">
       {/* Logo x */}
-      <div className="flex gap-2 items-center">
-        <Image src={"/logo.svg"} alt="logo" width={35} height={35} />
+      <Link href="/" className="flex items-center gap-2">
+        <Image src={"/logo1.svg"} alt="logo" width={24} height={24} className="ml-1" />
         <h2 className="font-bold text-xl">AI Website Generator</h2>
-      </div>
-      {/* Menu Options */}
-      <div className="flex gap-3">
+      </Link>
+      {/* Nav links + CTA */}
+      <div className="flex items-center gap-6">
         {MenuOptions.map((menu, index) => (
-          <Button variant={"ghost"} key={index}>
-            {menu.name}
-          </Button>
+          <Link href={menu.path} key={index}>
+            <Button variant={"ghost"}>{menu.name}</Button>
+          </Link>
         ))}
-      </div>
-
-      {/* Get Started Button */}
-      <div>
         <SignInButton mode="modal" forceRedirectUrl={"/workspace"}>
-         
-        <Link href={'/workspace'}>
-         
-          <Button>
-            Get Started <ArrowRight />
-          </Button>
+          <Link href={'/workspace'}>
+            <Button>
+              Get Started <ArrowRight />
+            </Button>
           </Link>
         </SignInButton>
       </div>

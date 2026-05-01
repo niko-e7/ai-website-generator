@@ -5,10 +5,13 @@ export async function POST(req: NextRequest) {
   try {
     const { messages } = await req.json();
 
+    const hasImage = messages.some((m: any) => Array.isArray(m.content));
+    const model = hasImage ? "anthropic/claude-3.5-sonnet" : "openrouter/auto";
+
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
       {
-       model: "openrouter/auto",
+        model,
         messages,
         stream: true,
       },

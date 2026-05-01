@@ -8,7 +8,6 @@ import { useUser } from "@clerk/nextjs";
 import {
   ArrowUp,
   HomeIcon,
-  ImagePlus,
   Key,
   LayoutDashboard,
   Loader2Icon,
@@ -100,23 +99,20 @@ function Hero() {
   return (
     <div className="flex flex-col items-center h-[80vh] justify-center">
       {/* Header & description */}
-      <h2 className="font-bold text-6xl">What should we design?</h2>
-      <p className="mt-2 text-xl text-gray-500">
+      <h2 className="font-bold text-6xl text-slate-100">What should we design?</h2>
+      <p className="mt-2 text-xl text-slate-400">
         Generate, Edit and Explore design with AI, Export code as well
       </p>
       {/* input box */}
-      <div className="w-full max-w-2xl p-5 border mt-5 rounded-2xl">
+      <div className="w-full max-w-2xl p-5 border border-slate-700 bg-slate-900 mt-5 rounded-2xl">
         <textarea
           placeholder="Describe your page design"
           value={userInput}
           onChange={(event) => setUserInput(event.target.value)}
-          className="w-full h-24 focus:outline-none focus:ring-0 resize-none"
+          className="w-full h-24 focus:outline-none focus:ring-0 resize-none bg-transparent text-slate-100 placeholder:text-slate-500"
         />
 
-        <div className="flex justify-between items-center">
-          <Button variant={"ghost"}>
-            <ImagePlus />
-          </Button>
+        <div className="flex justify-end items-center">
           <SignInButton mode="modal" forceRedirectUrl={"/workspace"}>
             <Button disabled={!userInput || loading} onClick={CreateNewProject}>
               {loading?<Loader2Icon className="animate-spin"/>:<ArrowUp />}

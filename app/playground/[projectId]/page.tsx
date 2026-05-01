@@ -108,25 +108,48 @@ function PlayGround() {
       const userMsg = result.data.chatMessages[0].content;
       SendMessage(userMsg);
     } else {
-      setMessages(result.data?.chatMessages);
+      setMessages(result.data?.chatMessages ?? []);
     }
   };
 
-  const SendMessage = async (userInput: string) => {
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const SendMessage = async (userInput: string, image?: File) => {
     setLoading(true);
 
-    //Add user mesage to chat
+    setMessages((prev: any) => [...prev, { role: "user", content: userInput || "Attached image" }]);
 
-    setMessages((prev: any) => [...prev, { role: "user", content: userInput }]);
+    const promptText = Prompt?.replace("{userInput}", userInput || "");
+
+    let messageContent: any = promptText;
+    if (image) {
+      const base64 = await fileToBase64(image);
+      messageContent = [
+        { type: "text", text: promptText },
+        { type: "image_url", image_url: { url: base64 } },
+      ];
+    }
 
     const result = await fetch("/api/ai-model", {
       method: "POST",
       body: JSON.stringify({
-        messages: [
-          { role: "user", content: Prompt?.replace("{userInput}", userInput) },
-        ], //Pass Prompt
+        messages: [{ role: "user", content: messageContent }],
       }),
     });
+
+    if (!result.ok) {
+      const err = await result.text();
+      console.error("AI model error:", err);
+      toast.error("AI request failed. Check the console for details.");
+      setLoading(false);
+      return;
+    }
 
     const reader = result.body?.getReader();
     const decoder = new TextDecoder();
@@ -161,7 +184,7 @@ function PlayGround() {
   };
 
   useEffect(() => {
-    if (messages.length > 0) {
+    if ((messages?.length ?? 0) > 0) {
       SaveMesaages();
     }
   }, [messages]);
@@ -191,7 +214,7 @@ function PlayGround() {
         {/* ChatSection */}
         <ChatSection
           messages={messages ?? []}
-          onSend={(input: string) => SendMessage(input)}
+          onSend={(input: string, image?: File) => SendMessage(input, image)}
           loading={loading}
         />
         {/* WebsiteDesign */}
