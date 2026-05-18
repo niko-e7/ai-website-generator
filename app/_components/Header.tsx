@@ -1,11 +1,9 @@
 import React from "react";
 import Image from "next/image";
-import path from "path";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { SignInButton } from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import Link from "next/link";
-
 
 const MenuOptions = [
   {
@@ -21,25 +19,35 @@ const MenuOptions = [
 function Header() {
   return (
     <div className="flex items-center justify-between p-4 shadow bg-[#07111f] border-b border-slate-800">
-      {/* Logo x */}
       <Link href="/" className="flex items-center gap-2">
         <Image src={"/logo1.svg"} alt="logo" width={24} height={24} className="ml-1" />
         <h2 className="font-bold text-xl">AI Website Generator</h2>
       </Link>
-      {/* Nav links + CTA */}
-      <div className="flex items-center gap-6">
+
+      <div className="flex items-center gap-0">
         {MenuOptions.map((menu, index) => (
           <Link href={menu.path} key={index}>
-            <Button variant={"ghost"}>{menu.name}</Button>
+            <Button variant="ghost">{menu.name}</Button>
           </Link>
         ))}
-        <SignInButton mode="modal" forceRedirectUrl={"/workspace"}>
-          <Link href={'/workspace'}>
-            <Button>
-              Get Started <ArrowRight />
-            </Button>
-          </Link>
-        </SignInButton>
+
+        <div className="ml-3">
+          <SignedOut>
+            <SignInButton mode="modal" forceRedirectUrl="/workspace">
+              <Button>
+                Get Started <ArrowRight />
+              </Button>
+            </SignInButton>
+          </SignedOut>
+
+          <SignedIn>
+            <Link href="/workspace">
+              <Button>
+                Open Workspace <ArrowRight />
+              </Button>
+            </Link>
+          </SignedIn>
+        </div>
       </div>
     </div>
   );

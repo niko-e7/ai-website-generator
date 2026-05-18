@@ -113,11 +113,17 @@ function Hero() {
         />
 
         <div className="flex justify-end items-center">
-          <SignInButton mode="modal" forceRedirectUrl={"/workspace"}>
-            <Button disabled={!userInput || loading} onClick={CreateNewProject}>
-              {loading?<Loader2Icon className="animate-spin"/>:<ArrowUp />}
-            </Button>
-          </SignInButton>
+          {!user ? (
+  <SignInButton mode="modal" forceRedirectUrl={"/workspace"}>
+    <Button>
+      <ArrowUp />
+    </Button>
+  </SignInButton>
+) : (
+  <Button onClick={CreateNewProject} disabled={!userInput || loading}>
+    {loading ? <Loader2Icon className="animate-spin" /> : <ArrowUp />}
+  </Button>
+)}
         </div>
       </div>
       {/* suggestion list */}
